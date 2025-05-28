@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
+// This class uses the Singleton pattern to ensure that game flow managment
+// Stays consistent
 public class GameManager : MonoBehaviour
 {
     // Static class GameManager to allow for access anywhere in the game.
@@ -9,7 +11,8 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     // List of puzzle scene names
-    public List<string> puzzleScenes = new List<string> { "Puzzle1", "Puzzle2", "Puzzle3" };
+    public List<string> puzzleScenes = new List<string> { "Puzzle1", "Puzzle2",
+        "Puzzle3" };
 
     // Current order of puzzles
     private List<string> currentPuzzleOrder = new List<string>();
