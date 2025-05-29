@@ -5,9 +5,27 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Master.unity
+    guid: 97e1d06f8b286b944896a49d80a685b3
+  - enabled: 1
+    path: Assets/Scenes/StartScene.unity
+    guid: 09119824a95226f43af50cfc1b303bf7
+  - enabled: 1
+    path: Assets/Scenes/Puzzle1.unity
+    guid: e331f4d454485e54d8372ae4d6500541
+  - enabled: 1
+    path: Assets/Scenes/Puzzle2.unity
+    guid: ba38d4763de7da7469b6cfeeedc04fdb
+  - enabled: 1
+    path: Assets/Scenes/Puzzle3.unity
+    guid: 607e278fe4a88324898699bae1ec1bc1
+  - enabled: 1
+    path: Assets/Scenes/TrophyRoom.unity
+    guid: c24d0d0b1269cd54d81e652e5cf4fb35
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 6d036b7bf33295642b5d672136d92338, type: 2}
