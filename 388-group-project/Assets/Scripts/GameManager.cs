@@ -1,41 +1,36 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 using System.Collections.Generic;
 
-// This class uses the Singleton pattern to ensure that game flow managment
-// Stays consistent
 public class GameManager : MonoBehaviour
 {
-    // Static class GameManager to allow for access anywhere in the game.
-    // Public getter methids and private setter methods.
     public static GameManager Instance { get; private set; }
 
-    // List of puzzle scene names
-    public List<string> puzzleScenes = new List<string> { "Puzzle1", "Puzzle2",
-        "Puzzle3" };
-
-    // Current order of puzzles
-    private List<string> currentPuzzleOrder = new List<string>();
-
-    // Track completed puzzles (Hashset since that has O(1) lookup time)
-    private HashSet<string> completedPuzzles = new HashSet<string>();
-
-    // Start scene name
+    // Scene lists
+    public List<string> puzzleScenes = new List<string> { "Puzzle1", "Puzzle2", "Puzzle3" };
     public string startScene = "StartScene";
-
-    // Trophy room scene name
     public string trophyRoomScene = "TrophyRoom";
+    public string masterScene = "Master";
+
+    private List<string> currentPuzzleOrder = new List<string>();
+    private HashSet<string> completedPuzzles = new HashSet<string>();
+    private string currentLoadedScene = "";
 
     private void Awake()
     {
-        // Singleton pattern
-        if (Instance == null) 
-        { 
+        Debug.Log("GameManager.Awake() Called");
+
+        if (Instance == null)
+        {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-
-            // Initialize puzzle order
             ResetPuzzleOrder();
+
+            if (SceneManager.GetActiveScene().name != masterScene)
+            {
+                SceneManager.LoadScene(masterScene);
+            }
         }
         else
         {
@@ -43,18 +38,53 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Reset puzzle order to default
+    private void Start()
+    {
+        LoadSceneAdditive(startScene);
+    }
+
+    #region Scene Management
+    private IEnumerator LoadSceneRoutine(string sceneName)
+    {
+        if (!string.IsNullOrEmpty(currentLoadedScene))
+        {
+            AsyncOperation unloadOp = SceneManager.UnloadSceneAsync(currentLoadedScene);
+            while (!unloadOp.isDone)
+            {
+                yield return null;
+            }
+        }
+
+        AsyncOperation loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+        loadOp.allowSceneActivation = true;
+
+        while (!loadOp.isDone)
+        {
+            yield return null;
+        }
+
+        currentLoadedScene = sceneName;
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneName));
+    }
+
+    public void LoadSceneAdditive(string sceneName)
+    {
+        StartCoroutine(LoadSceneRoutine(sceneName));
+    }
+    #endregion
+
+    #region Puzzle Management
     private void ResetPuzzleOrder()
     {
+        Debug.Log("ResetPuzzleOrder() Called");
         currentPuzzleOrder = new List<string>(puzzleScenes);
     }
 
-    // Randomize the puzzle order
     public void RandomizePuzzleOrder()
     {
+        Debug.Log("RandomizePuzzleOrder() Called");
         currentPuzzleOrder = new List<string>(puzzleScenes);
 
-        // Shuffle order of scenes
         for (int i = currentPuzzleOrder.Count - 1; i > 0; i--)
         {
             int j = Random.Range(0, i + 1);
@@ -64,9 +94,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Get the next puzzle scene
     public string GetNextPuzzleScene()
     {
+        Debug.Log("GetNextPuzzleScene() Called");
         foreach (string puzzleScene in currentPuzzleOrder)
         {
             if (!completedPuzzles.Contains(puzzleScene))
@@ -74,60 +104,56 @@ public class GameManager : MonoBehaviour
                 return puzzleScene;
             }
         }
-
-        // All puzzles completed
         return trophyRoomScene;
     }
 
-    // Mark a puzzle as completed
     public void CompletePuzzle(string sceneName)
     {
+        Debug.Log("CompletePuzzle() Called");
         if (puzzleScenes.Contains(sceneName))
         {
             completedPuzzles.Add(sceneName);
-
-            // Check if all puzzles are completed
             if (completedPuzzles.Count == puzzleScenes.Count)
             {
                 LoadTrophyRoom();
             }
         }
     }
+    #endregion
 
-    // Load the next puzzle
+    #region Public Interface
     public void LoadNextPuzzle()
     {
-        string nextScene = GetNextPuzzleScene();
-        SceneManager.LoadScene(nextScene);
+        Debug.Log("LoadNextPuzzle() Called");
+        LoadSceneAdditive(GetNextPuzzleScene());
     }
 
-    // Load the trophy room
     public void LoadTrophyRoom()
     {
-        SceneManager.LoadScene(trophyRoomScene);
+        Debug.Log("LoadTrophyRoom() Called");
+        LoadSceneAdditive(trophyRoomScene);
     }
 
-    // Return to start scene
     public void ReturnToStart()
     {
-        SceneManager.LoadScene(startScene);
+        Debug.Log("ReturnToStart");
+        LoadSceneAdditive(startScene);
     }
 
-    // Exit the game
     public void ExitGame()
     {
-        // Preproccer directive allows for different behaviour depending on
-        // where the game is being run.
-        #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-        #else
+        Debug.Log("ExitGame() Called");
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
             Application.Quit();
-        #endif
+#endif
     }
 
-    // Check if all puzzles are completed
     public bool AllPuzzlesCompleted()
     {
+        Debug.Log("AllPuzzleCompleted() Log");
         return completedPuzzles.Count == puzzleScenes.Count;
     }
+    #endregion
 }
